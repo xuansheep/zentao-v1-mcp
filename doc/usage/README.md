@@ -6,7 +6,7 @@ English version: [README.en.md](README.en.md)
 
 ## 工具列表
 
-第一版暴露 15 个工具：
+当前暴露 18 个工具：
 
 - `zentao_get_current_user`
 - `zentao_list_products`
@@ -19,6 +19,9 @@ English version: [README.en.md](README.en.md)
 - `zentao_get_build`
 - `zentao_create_build`
 - `zentao_update_build`
+- `zentao_create_bug`
+- `zentao_create_task`
+- `zentao_create_story`
 - `zentao_list_objects`
 - `zentao_get_object`
 - `zentao_list_releases`
@@ -90,9 +93,11 @@ English version: [README.en.md](README.en.md)
 
 ## 写操作安全
 
-第一版只暴露版本创建和版本更新两个写操作。两者都需要 `confirm=true` 才会真正发送禅道请求。
+当前只暴露五个明确白名单写操作：版本创建、版本更新、创建 Bug、创建任务和创建需求。所有写工具都需要 `confirm=true` 才会真正发送禅道请求。
 
-没有 `confirm=true` 时，`zentao_create_build` 和 `zentao_update_build` 只返回带有 `requires_confirmation=true` 的试运行摘要，不会发送 HTTP 请求。摘要包含 method、path 和脱敏后的请求体，可以让 agent 或调用方先确认再提交。
+没有 `confirm=true` 时，`zentao_create_build`、`zentao_update_build`、`zentao_create_bug`、`zentao_create_task` 和 `zentao_create_story` 只返回带有 `requires_confirmation=true` 的试运行摘要，不会发送 HTTP 请求。摘要包含 method、path 和脱敏后的请求体，可以让 agent 或调用方先确认再提交。
+
+创建版本示例：
 
 ```json
 {
@@ -105,4 +110,46 @@ English version: [README.en.md](README.en.md)
 }
 ```
 
-设计上不暴露通用创建或更新工具，也不暴露删除操作或任意 HTTP 代理。详细边界见[开发说明 — 第一版边界](../dev/README.md#第一版边界)，以及[设计文档 — 版本写工具](../design/zentao-v1-mcp-design.md#版本写工具)。
+创建 Bug 示例：
+
+```json
+{
+  "product_id": 60,
+  "title": "登录失败",
+  "severity": 2,
+  "pri": 1,
+  "type": "codeerror",
+  "openedBuild": ["trunk"],
+  "confirm": true
+}
+```
+
+创建任务示例：
+
+```json
+{
+  "execution_id": 1510,
+  "name": "实现登录接口",
+  "type": "devel",
+  "assignedTo": "admin",
+  "estStarted": "2026-07-09",
+  "deadline": "2026-07-31",
+  "confirm": true
+}
+```
+
+创建需求示例：
+
+```json
+{
+  "title": "支持短信登录",
+  "product": 60,
+  "pri": 2,
+  "category": "feature",
+  "spec": "支持通过短信验证码登录",
+  "verify": "用户可以收到验证码并完成登录",
+  "confirm": true
+}
+```
+
+设计上不暴露通用创建或更新工具，也不暴露删除操作或任意 HTTP 代理。详细边界见[开发说明 — 第一版边界](../dev/README.md#第一版边界)，以及[设计文档 — 写工具](../design/zentao-v1-mcp-design.md#写工具)。
