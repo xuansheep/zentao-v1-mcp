@@ -41,72 +41,62 @@ npm run verify
 
 ## npm 发布流程
 
-### 版本号规则
+### 包名与版本规则
 
-npm 不允许覆盖已经发布过的版本号。每次发布前必须先更新 `package.json` 中的 `version`，优先使用语义化版本：
+公开包发布到 npm scope `@einsteins`，完整包名为 `@einsteins/zentao-v1-mcp`。npm 不允许覆盖已经发布过的版本号，每次发布必须按语义化版本提升 `package.json` 和 `package-lock.json` 中的版本。
 
-```bash
-npm version patch
-```
-
-- 修复兼容性问题使用 `patch`，例如 `0.1.0` 到 `0.1.1`。
-- 新增兼容功能使用 `minor`，例如 `0.1.0` 到 `0.2.0`。
+- 修复兼容性问题使用 `patch`，例如 `1.0.0` 到 `1.0.1`。
+- 新增兼容功能使用 `minor`，例如 `1.0.0` 到 `1.1.0`。
 - 破坏兼容的变更使用 `major`。
 
-### 首次手动发布
+### 首次手动发布 1.0.0
 
-首次创建 npm 包时，GitHub trusted publishing 还无法接管，需要用 npm 账号或 granular token 手动发布一次。
-
-如果本机 2FA 可用，可以直接带一次性验证码发布：
+新包尚无 npm 包设置页面，首次发布需要从已经合并并通过 CI 的 `main` 分支手动执行一次：
 
 ```bash
-npm publish --access public --otp=<6位验证码>
-```
-
-如果使用 granular token，使用临时 userconfig，避免把 token 写入仓库或全局 `.npmrc`：
-
-```powershell
-$env:NPM_TOKEN = "npm_xxxxxxxxxxxxxxxxx"
-$env:NPM_CONFIG_USERCONFIG = "$PWD\.npmrc.publish"
-"//registry.npmjs.org/:_authToken=$env:NPM_TOKEN" | Set-Content -Encoding ascii $env:NPM_CONFIG_USERCONFIG
-
+git switch main
+git pull --ff-only origin main
+npm login
 npm whoami
+npm run verify
 npm publish --access public
-
-Remove-Item $env:NPM_CONFIG_USERCONFIG
-Remove-Item Env:\NPM_TOKEN
-Remove-Item Env:\NPM_CONFIG_USERCONFIG
+npm view @einsteins/zentao-v1-mcp version
+npx -y @einsteins/zentao-v1-mcp print-config
 ```
 
-发布成功后验证公开包：
+`npm whoami` 必须显示拥有 `@einsteins` scope 发布权限的账号。账号应开启 2FA，不要把 npm token 写入仓库、项目 `.npmrc` 或 GitHub Secrets。
 
-```bash
-npm view zentao-v1-mcp version
-npx -y zentao-v1-mcp print-config
-```
+`1.0.0` 已由本机发布，因此不要再推送 `v1.0.0` tag，否则发布 workflow 会尝试重复发布同一版本。自动 Tag 发布从下一个版本开始。
 
 ### GitHub trusted publishing
 
-首次发布成功后，在 npm 包设置中绑定 GitHub Actions trusted publisher。当前仓库的发布 workflow 是 `.github/workflows/publish.yml`，npm 页面里 `Workflow filename` 填 `publish.yml`。
-
-推荐配置：
+首次发布成功后，在 npm 的 `@einsteins/zentao-v1-mcp` 包设置中绑定 GitHub Actions trusted publisher：
 
 - Provider: `GitHub Actions`
-- Repository: 当前 GitHub 仓库
+- Organization or user: `xuansheep`
+- Repository: `zentao-v1-mcp`
 - Workflow filename: `publish.yml`
-- Environment name: 留空，除非后续 workflow 显式增加 environment
+- Environment name: 留空
 - Allowed action: `npm publish`
 
-trusted publishing 使用 GitHub OIDC，不需要在 GitHub Secrets 中保存长期 npm token。`publish.yml` 已保留 `id-token: write` 权限；不要删除该权限，否则自动发布无法换取 npm 发布凭据。
+trusted publishing 使用 GitHub OIDC，不需要长期 npm token。`publish.yml` 必须保留 `id-token: write` 权限。绑定验证成功后，建议在 npm 开启 `Require 2FA and disallow tokens`。
 
 ### 后续自动发布
 
-绑定 trusted publisher 后，后续发版只需要更新版本号并推送 tag：
+在开发分支提升版本，但不要提前创建 Git tag：
 
 ```bash
-npm version patch
-git push origin HEAD
-git push origin v0.1.1
+npm version patch --no-git-tag-version
+npm run verify
 ```
 
-`v*.*.*` tag 会触发 GitHub Actions 自动执行安装、构建、测试、smoke、审计和 `npm publish --access public`。
+提交 `package.json` 和 `package-lock.json`，通过 PR 合并到 `main`。等待 `main` CI 全部通过后，从最新 `main` 创建与包版本完全一致的 Tag：
+
+```bash
+git switch main
+git pull --ff-only origin main
+git tag -a v1.0.1 -m "Release v1.0.1"
+git push origin v1.0.1
+```
+
+`v*.*.*` Tag 会触发 GitHub Actions。工作流会先校验 Tag 与 `package.json.version` 一致，再执行安装、构建、测试、smoke、审计和 `npm publish --access public`。

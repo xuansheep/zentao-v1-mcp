@@ -4,12 +4,16 @@ MCP server for ZenTao RESTful API v1. It runs over stdio and gives agents a smal
 
 Chinese documentation: [README.md](README.md)
 
+## Project Origin
+
+This project is an Apache-2.0 derivative of [hustbeta/zentao-v1-mcp](https://github.com/hustbeta/zentao-v1-mcp), maintained by `xuansheep` and published under the npm scope `@einsteins`. See [NOTICE](NOTICE) for a summary of material changes from upstream.
+
 ## Quick Start
 
 Use the package directly from an MCP client:
 
 ```bash
-npx -y zentao-v1-mcp
+npx -y @einsteins/zentao-v1-mcp
 ```
 
 The default command starts the stdio MCP server and is equivalent to:
@@ -66,7 +70,7 @@ zentao-v1-mcp print-config
   "mcpServers": {
     "zentao-v1": {
       "command": "npx",
-      "args": ["-y", "zentao-v1-mcp"],
+      "args": ["-y", "@einsteins/zentao-v1-mcp"],
       "env": {
         "ZENTAO_BASE_URL": "https://zentao.example.com",
         "ZENTAO_ACCOUNT": "your-account",
