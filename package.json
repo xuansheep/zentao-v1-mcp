@@ -1,10 +1,15 @@
 {
-  "name": "zentao-v1-mcp",
-  "version": "0.1.2",
+  "name": "@einsteins/zentao-v1-mcp",
+  "version": "1.0.0",
   "description": "MCP server for ZenTao RESTful API v1",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/xuansheep/zentao-v1-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/xuansheep/zentao-v1-mcp/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hustbeta/zentao-v1-mcp"
+    "url": "git+https://github.com/xuansheep/zentao-v1-mcp.git"
   },
   "type": "module",
   "main": "dist/cli.js",
@@ -16,7 +21,8 @@
     "doc",
     "README.md",
     "README.en.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -40,5 +46,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.61.1"
   }
 }

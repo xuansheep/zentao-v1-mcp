@@ -26,6 +26,16 @@ jobs:
           # npm trusted publishing requires a recent npm CLI; Node 24 includes a compatible npm version.
           package-manager-cache: false
 
+      - name: Verify release tag
+        shell: bash
+        run: |
+          package_version="$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version")"
+          expected_tag="v${package_version}"
+          if [[ "${GITHUB_REF_NAME}" != "${expected_tag}" ]]; then
+            echo "Release tag ${GITHUB_REF_NAME} does not match package version ${package_version}."
+            exit 1
+          fi
+
       - name: Install dependencies
         run: npm ci
 

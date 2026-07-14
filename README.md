@@ -4,12 +4,16 @@
 
 English documentation: [README.en.md](README.en.md)
 
+## 项目来源
+
+本项目是基于 [hustbeta/zentao-v1-mcp](https://github.com/hustbeta/zentao-v1-mcp) 修改的 Apache-2.0 衍生版本，由 `xuansheep` 维护并通过 npm scope `@einsteins` 发布。相对上游的主要修改说明见 [NOTICE](NOTICE)。
+
 ## 快速开始
 
 ### 安装
 
 ```bash
-npm install -g zentao-v1-mcp
+npm install -g @einsteins/zentao-v1-mcp
 ```
 
 ### 配置
@@ -49,7 +53,7 @@ zentao-v1-mcp validate-config --login
   "mcpServers": {
     "zentao-v1": {
       "command": "npx",
-      "args": ["-y", "zentao-v1-mcp"],
+      "args": ["-y", "@einsteins/zentao-v1-mcp"],
       "env": {
         "ZENTAO_BASE_URL": "https://zentao.example.com",
         "ZENTAO_ACCOUNT": "your-account",
