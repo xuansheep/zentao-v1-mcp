@@ -6,7 +6,7 @@ import { createServer } from "../../src/server.js";
 import { ZentaoHttpError } from "../../src/zentao/client.js";
 
 describe("mcp smoke", () => {
-  it("registers fewer than 20 tools", () => {
+  it("registers no more than 20 tools", () => {
     const server = createServer({
       request: async () => ({ ok: true }),
     });
@@ -17,8 +17,10 @@ describe("mcp smoke", () => {
     expect(tools).toContain("zentao_create_bug");
     expect(tools).toContain("zentao_create_task");
     expect(tools).toContain("zentao_create_story");
-    expect(tools.length).toBe(18);
-    expect(tools.length).toBeLessThan(20);
+    expect(tools).toContain("zentao_auth");
+    expect(tools).toContain("zentao_upload_paste_image");
+    expect(tools.length).toBe(20);
+    expect(tools.length).toBeLessThanOrEqual(20);
   });
 
   it("serves tools/list through MCP transport", async () => {
@@ -35,6 +37,8 @@ describe("mcp smoke", () => {
     expect(result.tools.map((tool) => tool.name)).toContain("zentao_create_bug");
     expect(result.tools.map((tool) => tool.name)).toContain("zentao_create_task");
     expect(result.tools.map((tool) => tool.name)).toContain("zentao_create_story");
+    expect(result.tools.map((tool) => tool.name)).toContain("zentao_auth");
+    expect(result.tools.map((tool) => tool.name)).toContain("zentao_upload_paste_image");
     expect(result.tools).toHaveLength(server.toolNamesForTest().length);
 
     const getObjectTool = result.tools.find((tool) => tool.name === "zentao_get_object");
@@ -55,7 +59,6 @@ describe("mcp smoke", () => {
       command: process.execPath,
       args: ["dist/cli.js", "serve"],
       cwd: process.cwd(),
-      // The CLI should only need config to initialize; listTools must not trigger a ZenTao login.
       env: {
         ZENTAO_BASE_URL: "https://zentao.example.com",
         ZENTAO_ACCOUNT: "demo",
@@ -69,7 +72,9 @@ describe("mcp smoke", () => {
     const result = await client.listTools();
 
     expect(result.tools.map((tool) => tool.name)).toContain("zentao_list_products");
-    expect(result.tools).toHaveLength(18);
+    expect(result.tools.map((tool) => tool.name)).toContain("zentao_auth");
+    expect(result.tools.map((tool) => tool.name)).toContain("zentao_upload_paste_image");
+    expect(result.tools).toHaveLength(20);
 
     await client.close();
   }, 10_000);

@@ -2,8 +2,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { errorText } from "./mcp/result.js";
+import { registerAuthTools } from "./tools/authTools.js";
 import { registerBuildTools } from "./tools/buildTools.js";
 import { registerGenericTools } from "./tools/genericTools.js";
+import { registerImageTools } from "./tools/imageTools.js";
 import { registerQueryTools, type McpServerLike, type ZentaoRequester } from "./tools/queryTools.js";
 import { registerWriteTools } from "./tools/writeTools.js";
 
@@ -27,7 +29,6 @@ export function createServer(client: ZentaoRequester): CreatedZentaoMcpServer {
         try {
           return await handler(args as Record<string, unknown>);
         } catch (error) {
-          // Tool handlers must return MCP errors instead of letting HTTP/config errors terminate stdio.
           return errorText(error instanceof Error ? error.message : String(error), errorDetails(error));
         }
       });
@@ -37,6 +38,8 @@ export function createServer(client: ZentaoRequester): CreatedZentaoMcpServer {
   registerQueryTools(safeServer, client);
   registerBuildTools(safeServer, client);
   registerWriteTools(safeServer, client);
+  registerAuthTools(safeServer, client);
+  registerImageTools(safeServer, client);
   registerGenericTools(safeServer, client);
 
   return {
@@ -59,7 +62,6 @@ function errorDetails(error: unknown): unknown {
     "path" in error &&
     "responseBody" in error
   ) {
-    // ZenTaoHttpError already redacts responseBody; preserve it so MCP callers can diagnose API failures.
     return {
       status: error.status,
       path: error.path,
